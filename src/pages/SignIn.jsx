@@ -47,15 +47,20 @@ export default function SignIn() {
       socialType: 'NONE'
     };
 
+    //로그인 요청
     postData(apiData);
   };
 
-  console.log(data);
-
   useEffect(() => {
+    //로그인 요청이 정상이면 메인페이지로 이동
     if (data && data.success) {
       nav("/", {replace: true})
       return;
+    }
+    //로그인 요청이 오류이면 오류페이지로 이동
+    if (data && !data.error) {
+      console.log(data.error);
+      alert(data.error.message);
     }
   }, [data]);
 
