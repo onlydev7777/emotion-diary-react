@@ -35,7 +35,8 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
-  const {data, error, loading, postData} = useApi('/login-test', 'post');
+  const {response, error, loading, postData} = useApi('/login',
+      'post');
   const nav = useNavigate();
 
   const handleSubmit = (event) => {
@@ -53,16 +54,18 @@ export default function SignIn() {
 
   useEffect(() => {
     //로그인 요청이 정상이면 메인페이지로 이동
-    if (data && data.success) {
+    if (response && response.status === 200) {
+      localStorage.setItem('token', response.headers.authorization);
       nav("/", {replace: true})
       return;
     }
     //로그인 요청이 오류이면 오류페이지로 이동
-    if (data && !data.error) {
-      console.log(data.error);
-      alert(data.error.message);
+    if (error) {
+      // console.log(error.message)
+      alert(error.message);
+      return;
     }
-  }, [data]);
+  }, [response, error]);
 
   return (
       <ThemeProvider theme={defaultTheme}>

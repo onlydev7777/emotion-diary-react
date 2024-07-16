@@ -1,9 +1,10 @@
 import Header from "../components/Header.jsx";
 import Button from "../components/Button.jsx";
 import DiaryList from "../components/DisaryList.jsx";
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {DiaryStateContext} from "../App.jsx"
 import usePageTitle from "../hooks/usePageTitle.jsx";
+import {useNavigate} from "react-router-dom";
 
 const getMonthlyData = (pivotDate, data) => {
   const beginTime = new Date(pivotDate.getFullYear(), pivotDate.getMonth(), 1,
@@ -19,7 +20,17 @@ const getMonthlyData = (pivotDate, data) => {
 const Home = () => {
   const [pivotDate, setPivotDate] = useState(new Date());
   const data = useContext(DiaryStateContext);
+  const nav = useNavigate();
   usePageTitle("감정일기장");
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (token === 'undefined') {
+      alert("로그인 후 이용 바랍니다.");
+      nav("/signin", {replace: true})
+      return;
+    }
+  }, [token]);
 
   const monthlyData = getMonthlyData(pivotDate, data);
 

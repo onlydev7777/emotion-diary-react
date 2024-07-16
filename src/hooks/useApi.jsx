@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import axiosInstance from '../api/axiosConfig';
 
 const useApi = (url, method = 'get', body = null, options = {}) => {
-  const [data, setData] = useState(null);
+  const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ const useApi = (url, method = 'get', body = null, options = {}) => {
             method,
             ...options,
           });
-          setData(response.data);
+          setResponse(response);
         } catch (err) {
           setError(err);
         } finally {
@@ -32,7 +32,7 @@ const useApi = (url, method = 'get', body = null, options = {}) => {
     setLoading(true);
     try {
       const response = await axiosInstance.post(url, postData, options);
-      setData(response.data);
+      setResponse(response);
     } catch (err) {
       setError(err);
     } finally {
@@ -40,7 +40,7 @@ const useApi = (url, method = 'get', body = null, options = {}) => {
     }
   };
 
-  return { data, error, loading, postData };
+  return {response, error, loading, postData};
 };
 
 export default useApi;

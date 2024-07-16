@@ -1,16 +1,16 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL:'http://localhost:9001',
+  baseURL: 'http://localhost:9001',
   timeout: 10000,
-  headers:{
+  headers: {
     'Content-Type': 'application/json'
   }
 });
 
 axiosInstance.interceptors.request.use(
-    config=>{
-      config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
+    config => {
+      // config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
       return config;
     },
     error => {
