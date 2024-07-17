@@ -62,7 +62,7 @@ export default function SignIn() {
     //로그인 요청이 오류이면 오류페이지로 이동
     if (error) {
       // console.log(error.message)
-      alert(error.message);
+      alert("[" + error.response.status + "] " + error.response.data);
       return;
     }
   }, [response, error]);

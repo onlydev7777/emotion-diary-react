@@ -25,7 +25,7 @@ const Home = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (token === 'undefined') {
+    if (token === null || token === 'undefined') {
       alert("로그인 후 이용 바랍니다.");
       nav("/signin", {replace: true})
       return;

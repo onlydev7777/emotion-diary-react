@@ -2,7 +2,7 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:9001',
-  timeout: 10000,
+  timeout: 300000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     config => {
-      // config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
+      config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
       return config;
     },
     error => {
