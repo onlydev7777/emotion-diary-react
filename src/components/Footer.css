@@ -1,0 +1,27 @@
+.Footer {
+  display: flex;
+  align-items: center;
+
+  padding: 20px 0px;
+  border-top: 1px solid rgb(226, 226, 226);
+}
+
+.Footer > div {
+  display: flex;
+}
+
+.Footer .footer_center {
+  width: 50%;
+  font-size: 25px;
+  justify-content: center;
+}
+
+.Footer .footer_left {
+  width: 25%;
+  justify-content: flex-start;
+}
+
+.Footer .footer_right {
+  width: 25%;
+  justify-content: flex-end;
+}

@@ -5,6 +5,8 @@ import {useContext, useEffect, useState} from "react";
 import {DiaryStateContext} from "../App.jsx"
 import usePageTitle from "../hooks/usePageTitle.jsx";
 import {useNavigate} from "react-router-dom";
+import Footer from "../components/Footer.jsx";
+import useApi from "../hooks/useApi.jsx";
 
 const getMonthlyData = (pivotDate, data) => {
   const beginTime = new Date(pivotDate.getFullYear(), pivotDate.getMonth(), 1,
@@ -21,6 +23,7 @@ const Home = () => {
   const [pivotDate, setPivotDate] = useState(new Date());
   const data = useContext(DiaryStateContext);
   const nav = useNavigate();
+  const {response, error, loading, fetchData} = useApi("/auth/logout");
   usePageTitle("감정일기장");
   const token = localStorage.getItem("token");
 
@@ -32,6 +35,19 @@ const Home = () => {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (response && response.status === 200) {
+      localStorage.removeItem("token");
+      alert("success logout!");
+      nav("/signin", {replace: true})
+      return;
+    }
+    if (error) {
+      alert("[" + error.response.status + "] " + error.response.data);
+      return;
+    }
+  }, [response]);
+
   const monthlyData = getMonthlyData(pivotDate, data);
 
   const onIncreaseMonth = () => {
@@ -42,6 +58,11 @@ const Home = () => {
     setPivotDate(new Date(pivotDate.getFullYear(), pivotDate.getMonth() - 1));
   };
 
+  const onLogout = (e) => {
+    e.preventDefault();
+    fetchData('get');
+  }
+
   return (
       <div>
         <Header
@@ -49,6 +70,7 @@ const Home = () => {
             leftChild={<Button text={"<"} onCLick={onDecreaseMonth}/>}
             rightChild={<Button text={">"} onCLick={onIncreaseMonth}/>}/>
         <DiaryList data={monthlyData}/>
+        <Footer rightChild={<Button text={"logout"} onCLick={onLogout}/>}/>
       </div>
   );
 };

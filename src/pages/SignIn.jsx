@@ -35,7 +35,7 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
-  const {response, error, loading, postData} = useApi('/login',
+  const {response, error, loading, fetchData} = useApi('/login',
       'post');
   const nav = useNavigate();
 
@@ -49,7 +49,7 @@ export default function SignIn() {
     };
 
     //로그인 요청
-    postData(apiData);
+    fetchData('post', apiData);
   };
 
   useEffect(() => {
