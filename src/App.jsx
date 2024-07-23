@@ -8,7 +8,7 @@ import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import {createContext, useEffect, useReducer, useRef, useState} from "react";
 import useApi from "./hooks/useApi.jsx";
-import {getDate} from "./util/get-stringed-date.js";
+import {getDate, getStringedDate} from "./util/get-stringed-date.js";
 
 function reducer(state, action) {
   let nextState;
@@ -31,7 +31,7 @@ function reducer(state, action) {
       return state;
   }
 
-  localStorage.setItem("diary", JSON.stringify(nextState));
+  // localStorage.setItem("diary", JSON.stringify(nextState));
   return nextState;
 }
 
@@ -43,6 +43,7 @@ export const DiaryDispatchContext = createContext();
 function App() {
   // const [isLoading, setIsLoading] = useState(true);
   const [data, dispatch] = useReducer(reducer, []);
+  const [reducerType, setReducerType] = useState("INIT")
   const idRef = useRef(0);
   const {response, error, loading, fetchData} = useApi("/diary/month-list",
       "get");
@@ -68,25 +69,36 @@ function App() {
   //api response setting
   useEffect(() => {
     if (response && response.status === 200) {
-      // dispatch({type: 'INIT', data: response.data});
+      const responseData = response.data.response;
 
-      const diaryList = response.data.response.map((item) => {
-        return {
-          id: item.id,
-          createdDate: getDate(item.diaryDate),
-          emotionId: item.emotionStatus,
-          subject: item.subject,
-          content: item.content,
+      let diaryData;
+      if (reducerType === "INIT") {
+        diaryData = responseData.map((item) => {
+          return {
+            id: item.id,
+            createdDate: getDate(item.diaryDate),
+            emotionId: Number(item.emotionStatus),
+            // subject: item.subject,
+            content: item.content,
+          };
+        });
+      } else if (reducerType === "CREATE" || reducerType === "UPDATE") {
+        diaryData = {
+          id: responseData.id,
+          createdDate: getDate(responseData.diaryDate),
+          emotionId: Number(responseData.emotionStatus),
+          // subject: response.data.response[key].subject,
+          content: responseData.content,
         };
-      })
+      }
 
-      // console.log(diaryList);
+      // console.log(diaryData);
       dispatch({
-        type: "INIT",
-        data: diaryList
+        type: reducerType,
+        data: diaryData
       })
 
-      setApiLoading(false)
+      setApiLoading(false);
     }
     if (error) {
       alert("[" + error.response.status + "] " + error.response.data);
@@ -96,27 +108,53 @@ function App() {
 
   //새로운 일기 추가
   const onCreate = (createdDate, emotionId, content) => {
-    dispatch({
-      type: "CREATE",
+    setReducerType("CREATE");
+
+    fetchData({
+      url: "/diary",
+      method: "post",
       data: {
-        id: idRef.current++,
-        createdDate,
-        emotionId,
-        content,
+        memberId: 1,
+        diaryDate: getStringedDate(new Date(createdDate)),
+        emotionStatus: String(emotionId),
+        content: content
       }
-    });
+    })
+    // dispatch({
+    //   type: "CREATE",
+    //   data: {
+    //     id: idRef.current++,
+    //     createdDate,
+    //     emotionId,
+    //     content,
+    //   }
+    // });
   };
   //일기 수정
   const onUpdate = (id, createdDate, emotionId, content) => {
-    dispatch({
-      type: "UPDATE",
+    setReducerType("UPDATE");
+
+    fetchData({
+      url: "/diary",
+      method: "patch",
       data: {
-        id,
-        createdDate,
-        emotionId,
-        content
+        id: id,
+        memberId: 1,
+        diaryDate: getStringedDate(new Date(createdDate)),
+        emotionStatus: String(emotionId),
+        content: content
       }
     })
+
+    // dispatch({
+    //   type: "UPDATE",
+    //   data: {
+    //     id,
+    //     createdDate,
+    //     emotionId,
+    //     content
+    //   }
+    // })
   };
 
   //일기 삭제
