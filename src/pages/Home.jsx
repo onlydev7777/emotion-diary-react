@@ -23,9 +23,9 @@ const Home = () => {
   const [pivotDate, setPivotDate] = useState(new Date());
   const data = useContext(DiaryStateContext);
   const nav = useNavigate();
-  const {response, error, loading, fetchData} = useApi("/auth/logout");
+  const {response, error, loading, fetchData} = useApi("/auth/logout", "get");
   usePageTitle("감정일기장");
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('Access-Token');
 
   useEffect(() => {
     if (token === null || token === 'undefined') {
@@ -37,7 +37,8 @@ const Home = () => {
 
   useEffect(() => {
     if (response && response.status === 200) {
-      localStorage.removeItem("token");
+      localStorage.removeItem('Access-Token');
+      localStorage.removeItem('Refresh-Token');
       alert("success logout!");
       nav("/signin", {replace: true})
       return;
@@ -60,7 +61,7 @@ const Home = () => {
 
   const onLogout = (e) => {
     e.preventDefault();
-    fetchData('get');
+    fetchData({});
   }
 
   return (

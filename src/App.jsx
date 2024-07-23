@@ -7,6 +7,7 @@ import Edit from "./pages/Edit.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import {createContext, useEffect, useReducer, useRef, useState} from "react";
+import useApi from "./hooks/useApi.jsx";
 
 function reducer(state, action) {
   let nextState;
@@ -42,9 +43,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [data, dispatch] = useReducer(reducer, []);
   const idRef = useRef(0);
+  const {response, error, loading, fetchData} = useApi("/diary/month-list",
+      "get");
+  const [axiosLoading, setAxiosLoading] = useState(false);
 
   useEffect(() => {
     const storedData = localStorage.getItem("diary");
+
     if (!storedData) {
       setIsLoading(false);
       return;
@@ -69,8 +74,23 @@ function App() {
       type: "INIT",
       data: parsedData
     });
+
+    const now = new Date();
+    let month = now.getMonth() + 1;
+    if (month < 10) {
+      month = "0" + month;
+    }
+    if (!axiosLoading) {
+      fetchData({
+        params: {
+          diaryYearMonth: String(now.getFullYear()) + String(month)
+        }
+      })
+      setAxiosLoading(true);
+    }
+
     setIsLoading(false);
-  }, []);
+  }, [response]);
 
   //새로운 일기 추가
   const onCreate = (createdDate, emotionId, content) => {

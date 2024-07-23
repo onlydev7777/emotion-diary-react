@@ -49,13 +49,14 @@ export default function SignIn() {
     };
 
     //로그인 요청
-    fetchData('post', apiData);
+    fetchData({method: 'post', data: apiData});
   };
 
   useEffect(() => {
     //로그인 요청이 정상이면 메인페이지로 이동
     if (response && response.status === 200) {
-      localStorage.setItem('token', response.headers.authorization);
+      localStorage.setItem('Access-Token', response.headers.authorization);
+      localStorage.setItem('Refresh-Token', response.headers["refresh-token"]);
       nav("/", {replace: true})
       return;
     }
