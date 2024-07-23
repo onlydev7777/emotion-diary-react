@@ -27,7 +27,7 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
     data = null,
     headers = {},
     params = {}
-  }) => {
+  } = {}) => {
     setLoading(true);
     setError(null);
     setResponse(null);

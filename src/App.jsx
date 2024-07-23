@@ -8,6 +8,7 @@ import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import {createContext, useEffect, useReducer, useRef, useState} from "react";
 import useApi from "./hooks/useApi.jsx";
+import {getDate} from "./util/get-stringed-date.js";
 
 function reducer(state, action) {
   let nextState;
@@ -40,57 +41,58 @@ export const DiaryDispatchContext = createContext();
 // 2. "/new" : 새로운 일기를 작성하는 New 페이지
 // 3. "/diary" : 일기를 상세히 조회하는 Diary 페이지
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const [data, dispatch] = useReducer(reducer, []);
   const idRef = useRef(0);
   const {response, error, loading, fetchData} = useApi("/diary/month-list",
       "get");
-  const [axiosLoading, setAxiosLoading] = useState(false);
+  const [apiLoading, setApiLoading] = useState(true);
 
+  //api load
   useEffect(() => {
-    const storedData = localStorage.getItem("diary");
-
-    if (!storedData) {
-      setIsLoading(false);
-      return;
-    }
-
-    const parsedData = JSON.parse(storedData);
-    if (!Array.isArray(parsedData)) {
-      setIsLoading(false);
-      return;
-    }
-
-    let maxId = 0;
-    parsedData.forEach((item) => {
-      if (Number(item.id) > maxId) {
-        maxId = item.id;
+    if (apiLoading) {
+      const now = new Date();
+      let month = now.getMonth() + 1;
+      if (month < 10) {
+        month = "0" + month;
       }
-    })
 
-    idRef.current = maxId + 1;
-
-    dispatch({
-      type: "INIT",
-      data: parsedData
-    });
-
-    const now = new Date();
-    let month = now.getMonth() + 1;
-    if (month < 10) {
-      month = "0" + month;
-    }
-    if (!axiosLoading) {
       fetchData({
         params: {
           diaryYearMonth: String(now.getFullYear()) + String(month)
         }
       })
-      setAxiosLoading(true);
     }
+  }, [apiLoading]);
 
-    setIsLoading(false);
-  }, [response]);
+  //api response setting
+  useEffect(() => {
+    if (response && response.status === 200) {
+      // dispatch({type: 'INIT', data: response.data});
+
+      const diaryList = response.data.response.map((item) => {
+        return {
+          id: item.id,
+          createdDate: getDate(item.diaryDate),
+          emotionId: item.emotionStatus,
+          subject: item.subject,
+          content: item.content,
+        };
+      })
+
+      // console.log(diaryList);
+      dispatch({
+        type: "INIT",
+        data: diaryList
+      })
+
+      setApiLoading(false)
+    }
+    if (error) {
+      alert("[" + error.response.status + "] " + error.response.data);
+      return;
+    }
+  }, [response, error]);
 
   //새로운 일기 추가
   const onCreate = (createdDate, emotionId, content) => {
@@ -125,7 +127,7 @@ function App() {
     })
   };
 
-  if (isLoading) {
+  if (apiLoading) {
     return (
         <div>데이터 로딩중...</div>
     );

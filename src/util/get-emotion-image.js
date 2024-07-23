@@ -5,16 +5,16 @@ import emotion4 from "../assets/emotion4.png";
 import emotion5 from "../assets/emotion5.png";
 
 export function getEmotionImage(emotionId) {
-  switch (emotionId) {
-    case 1:
+  switch (String(emotionId)) {
+    case '1':
       return emotion1;
-    case 2:
+    case '2':
       return emotion2;
-    case 3:
+    case '3':
       return emotion3;
-    case 4:
+    case '4':
       return emotion4;
-    case 5:
+    case '5':
       return emotion5;
     default:
       return null;
