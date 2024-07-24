@@ -13,11 +13,14 @@ const DiaryList = ({data}) => {
   }
 
   const getSortedData = () => {
-    return data.toSorted((a, b) =>
-        sortType === "oldest"
-            ? Number(a.createdDate) - Number(b.createdDate)
-            : Number(b.createdDate) - Number(a.createdDate)
-    );
+    // return data.toSorted((a, b) =>
+    //     sortType === "oldest"
+    //         ? Number(a.createdDate.replace(/-/g, '')) - Number(
+    //         b.createdDate.replace(/-/g, ''))
+    //         : Number(b.createdDate.replace(/-/g, '')) - Number(
+    //         a.createdDate.replace(/-/g, ''))
+    // );
+    return data;
   };
 
   const sortedData = getSortedData();

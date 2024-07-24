@@ -7,21 +7,20 @@ import usePageTitle from "../hooks/usePageTitle.jsx";
 import {useNavigate} from "react-router-dom";
 import Footer from "../components/Footer.jsx";
 import useApi from "../hooks/useApi.jsx";
+import {
+  getDateYearMonth,
+  getStringYearMonth
+} from "../util/get-stringed-date.js";
 
-const getMonthlyData = (pivotDate, data) => {
-  const beginTime = new Date(pivotDate.getFullYear(), pivotDate.getMonth(), 1,
-      0, 0, 0).getTime();
-
-  const endTime = new Date(pivotDate.getFullYear(), pivotDate.getMonth() + 1, 0,
-      23, 59, 59).getTime();
-
-  return data.filter(
-      (item) => beginTime <= item.createdDate && item.createdDate <= endTime
-  );
-}
 const Home = () => {
   const [pivotDate, setPivotDate] = useState(new Date());
-  const {data, loginSuccess, setLoginSuccess} = useContext(DiaryStateContext);
+  const {
+    data,
+    loginSuccess,
+    setLoginSuccess,
+    yearMonth,
+    setYearMonth
+  } = useContext(DiaryStateContext);
   const nav = useNavigate();
   const {response, error, loading, fetchData} = useApi("/auth/logout", "get");
   usePageTitle("감정일기장");
@@ -50,14 +49,23 @@ const Home = () => {
     }
   }, [response]);
 
-  const monthlyData = getMonthlyData(pivotDate, data);
+  const getYear = () => {
+    return yearMonth.substring(0, 4);
+  }
 
+  const getMonth = () => {
+    return yearMonth.substring(5, 6);
+  }
   const onIncreaseMonth = () => {
-    setPivotDate(new Date(pivotDate.getFullYear(), pivotDate.getMonth() + 1));
+    let currDate = getDateYearMonth(yearMonth);
+    currDate.setMonth(currDate.getMonth() + 1);
+    setYearMonth(getStringYearMonth(currDate));
   };
 
   const onDecreaseMonth = () => {
-    setPivotDate(new Date(pivotDate.getFullYear(), pivotDate.getMonth() - 1));
+    let currDate = getDateYearMonth(yearMonth);
+    currDate.setMonth(currDate.getMonth() - 1);
+    setYearMonth(getStringYearMonth(currDate));
   };
 
   const onLogout = (e) => {
@@ -68,10 +76,10 @@ const Home = () => {
   return (
       <div>
         <Header
-            title={`${pivotDate.getFullYear()}년 ${pivotDate.getMonth() + 1}월`}
+            title={`${getYear()}년 ${getMonth()}월`}
             leftChild={<Button text={"<"} onCLick={onDecreaseMonth}/>}
             rightChild={<Button text={">"} onCLick={onIncreaseMonth}/>}/>
-        <DiaryList data={monthlyData}/>
+        <DiaryList data={data}/>
         <Footer rightChild={<Button text={"logout"} onCLick={onLogout}/>}/>
       </div>
   );

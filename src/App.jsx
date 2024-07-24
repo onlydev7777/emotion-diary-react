@@ -6,35 +6,13 @@ import NotFound from "./pages/NotFound.jsx";
 import Edit from "./pages/Edit.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
-import {createContext, useEffect, useReducer, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import useApi from "./hooks/useApi.jsx";
-import {getDate, getStringedDate} from "./util/get-stringed-date.js";
-
-function reducer(state, action) {
-  let nextState;
-  switch (action.type) {
-    case "INIT":
-      return action.data;
-    case "CREATE":
-      nextState = [action.data, ...state];
-      break;
-    case "UPDATE":
-      nextState = state.map(
-          (item) => String(item.id) === String(action.data.id) ? action.data
-              : item
-      );
-      break;
-    case "DELETE":
-      nextState = state.filter(
-          (item) => String(item.id) !== String(action.data.id));
-      break;
-    default:
-      return state;
-  }
-
-  // localStorage.setItem("diary", JSON.stringify(nextState));
-  return nextState;
-}
+import {
+  getDate,
+  getStringedDate,
+  getStringYearMonth
+} from "./util/get-stringed-date.js";
 
 export const DiaryStateContext = createContext();
 export const DiaryDispatchContext = createContext();
@@ -43,8 +21,10 @@ export const DiaryDispatchContext = createContext();
 // 3. "/diary" : 일기를 상세히 조회하는 Diary 페이지
 function App() {
   // const [isLoading, setIsLoading] = useState(true);
-  const [data, dispatch] = useReducer(reducer, []);
-  const [reducerType, setReducerType] = useState("INIT")
+  // const [data, dispatch] = useReducer(reducer, []);
+  const [data, setData] = useState([]);
+  const [apiMethod, setApiMethod] = useState("INIT");
+  const [yearMonth, setYearMonth] = useState(getStringYearMonth(new Date()));
   const {response, error, loading, fetchData} = useApi("/diary/month-list",
       "get");
   const [apiLoading, setApiLoading] = useState(true);
@@ -54,28 +34,21 @@ function App() {
   //api load
   useEffect(() => {
     if (loginSuccess && apiLoading) {
-      const now = new Date();
-      let month = now.getMonth() + 1;
-      if (month < 10) {
-        month = "0" + month;
-      }
-
-      fetchData({
-        params: {
-          diaryYearMonth: String(now.getFullYear()) + String(month)
-        }
-      })
+      onInit();
     }
-  }, [loginSuccess, apiLoading]);
+  }, [loginSuccess, apiLoading, yearMonth]);
+
+  useEffect(() => {
+    onInit();
+  }, [yearMonth]);
 
   //api response setting
   useEffect(() => {
     if (response && response.status === 200) {
       const responseData = response.data.response;
 
-      let diaryData;
-      if (reducerType === "INIT") {
-        diaryData = responseData.map((item) => {
+      if (apiMethod === "INIT") {
+        const mappingData = responseData.map((item) => {
           return {
             id: item.id,
             createdDate: getDate(item.diaryDate),
@@ -84,25 +57,11 @@ function App() {
             content: item.content,
           };
         });
-      } else if (reducerType === "CREATE" || reducerType === "UPDATE") {
-        diaryData = {
-          id: responseData.id,
-          createdDate: getDate(responseData.diaryDate),
-          emotionId: Number(responseData.emotionStatus),
-          // subject: response.data.response[key].subject,
-          content: responseData.content,
-        };
-      } else if (reducerType === "DELETE") {
-        diaryData = {
-          id: responseData.id
-        }
+        setData(mappingData);
+      } else {
+        setApiMethod("INIT");
+        onInit();
       }
-
-      // console.log(diaryData);
-      dispatch({
-        type: reducerType,
-        data: diaryData,
-      })
 
       setApiLoading(false);
     }
@@ -112,9 +71,16 @@ function App() {
     }
   }, [response]);
 
+  const onInit = () => {
+    fetchData({
+      params: {
+        diaryYearMonth: yearMonth
+      }
+    });
+  }
   //새로운 일기 추가
   const onCreate = (createdDate, emotionId, content) => {
-    setReducerType("CREATE");
+    setApiMethod("CREATE");
 
     fetchData({
       url: "/diary",
@@ -129,7 +95,7 @@ function App() {
   };
   //일기 수정
   const onUpdate = (id, createdDate, emotionId, content) => {
-    setReducerType("UPDATE");
+    setApiMethod("UPDATE");
 
     fetchData({
       url: "/diary",
@@ -146,7 +112,7 @@ function App() {
 
   //일기 삭제
   const onDelete = (id) => {
-    setReducerType("DELETE");
+    setApiMethod("DELETE");
 
     fetchData({
       url: "/diary/" + id,
@@ -163,7 +129,13 @@ function App() {
   return (
       <>
         <DiaryStateContext.Provider
-            value={{data, loginSuccess, setLoginSuccess}}>
+            value={{
+              data,
+              loginSuccess,
+              setLoginSuccess,
+              yearMonth,
+              setYearMonth
+            }}>
           <DiaryDispatchContext.Provider value={{onCreate, onUpdate, onDelete}}>
             <Routes>
               <Route path="/" element={<Home/>}/>
