@@ -6,7 +6,7 @@ import NotFound from "./pages/NotFound.jsx";
 import Edit from "./pages/Edit.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
-import {createContext, useEffect, useReducer, useRef, useState} from "react";
+import {createContext, useEffect, useReducer, useState} from "react";
 import useApi from "./hooks/useApi.jsx";
 import {getDate, getStringedDate} from "./util/get-stringed-date.js";
 
@@ -25,7 +25,8 @@ function reducer(state, action) {
       );
       break;
     case "DELETE":
-      nextState = state.filter((item) => String(item.id) !== String(action.id));
+      nextState = state.filter(
+          (item) => String(item.id) !== String(action.data.id));
       break;
     default:
       return state;
@@ -44,14 +45,15 @@ function App() {
   // const [isLoading, setIsLoading] = useState(true);
   const [data, dispatch] = useReducer(reducer, []);
   const [reducerType, setReducerType] = useState("INIT")
-  const idRef = useRef(0);
   const {response, error, loading, fetchData} = useApi("/diary/month-list",
       "get");
   const [apiLoading, setApiLoading] = useState(true);
+  const [loginSuccess, setLoginSuccess] = useState(
+      localStorage.getItem("Access-Token") != null);
 
   //api load
   useEffect(() => {
-    if (apiLoading) {
+    if (loginSuccess && apiLoading) {
       const now = new Date();
       let month = now.getMonth() + 1;
       if (month < 10) {
@@ -64,7 +66,7 @@ function App() {
         }
       })
     }
-  }, [apiLoading]);
+  }, [loginSuccess, apiLoading]);
 
   //api response setting
   useEffect(() => {
@@ -90,12 +92,16 @@ function App() {
           // subject: response.data.response[key].subject,
           content: responseData.content,
         };
+      } else if (reducerType === "DELETE") {
+        diaryData = {
+          id: responseData.id
+        }
       }
 
       // console.log(diaryData);
       dispatch({
         type: reducerType,
-        data: diaryData
+        data: diaryData,
       })
 
       setApiLoading(false);
@@ -104,7 +110,7 @@ function App() {
       alert("[" + error.response.status + "] " + error.response.data);
       return;
     }
-  }, [response, error]);
+  }, [response]);
 
   //새로운 일기 추가
   const onCreate = (createdDate, emotionId, content) => {
@@ -114,21 +120,12 @@ function App() {
       url: "/diary",
       method: "post",
       data: {
-        memberId: 1,
+        memberId: localStorage.getItem('id'),
         diaryDate: getStringedDate(new Date(createdDate)),
         emotionStatus: String(emotionId),
         content: content
       }
     })
-    // dispatch({
-    //   type: "CREATE",
-    //   data: {
-    //     id: idRef.current++,
-    //     createdDate,
-    //     emotionId,
-    //     content,
-    //   }
-    // });
   };
   //일기 수정
   const onUpdate = (id, createdDate, emotionId, content) => {
@@ -139,33 +136,25 @@ function App() {
       method: "patch",
       data: {
         id: id,
-        memberId: 1,
+        memberId: localStorage.getItem('id'),
         diaryDate: getStringedDate(new Date(createdDate)),
         emotionStatus: String(emotionId),
         content: content
       }
     })
-
-    // dispatch({
-    //   type: "UPDATE",
-    //   data: {
-    //     id,
-    //     createdDate,
-    //     emotionId,
-    //     content
-    //   }
-    // })
   };
 
   //일기 삭제
   const onDelete = (id) => {
-    dispatch({
-      type: "DELETE",
-      id: id
+    setReducerType("DELETE");
+
+    fetchData({
+      url: "/diary/" + id,
+      method: "delete",
     })
   };
 
-  if (apiLoading) {
+  if (loginSuccess && apiLoading) {
     return (
         <div>데이터 로딩중...</div>
     );
@@ -173,7 +162,8 @@ function App() {
 
   return (
       <>
-        <DiaryStateContext.Provider value={data}>
+        <DiaryStateContext.Provider
+            value={{data, loginSuccess, setLoginSuccess}}>
           <DiaryDispatchContext.Provider value={{onCreate, onUpdate, onDelete}}>
             <Routes>
               <Route path="/" element={<Home/>}/>

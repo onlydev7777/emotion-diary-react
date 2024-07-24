@@ -21,24 +21,25 @@ const getMonthlyData = (pivotDate, data) => {
 }
 const Home = () => {
   const [pivotDate, setPivotDate] = useState(new Date());
-  const data = useContext(DiaryStateContext);
+  const {data, loginSuccess, setLoginSuccess} = useContext(DiaryStateContext);
   const nav = useNavigate();
   const {response, error, loading, fetchData} = useApi("/auth/logout", "get");
   usePageTitle("감정일기장");
-  const token = localStorage.getItem('Access-Token');
 
   useEffect(() => {
-    if (token === null || token === 'undefined') {
+    if (!loginSuccess) {
       alert("로그인 후 이용 바랍니다.");
       nav("/signin", {replace: true})
       return;
     }
-  }, [token]);
+  }, [loginSuccess]);
 
   useEffect(() => {
     if (response && response.status === 200) {
       localStorage.removeItem('Access-Token');
       localStorage.removeItem('Refresh-Token');
+      localStorage.removeItem('id');
+      setLoginSuccess(false);
       alert("success logout!");
       nav("/signin", {replace: true})
       return;

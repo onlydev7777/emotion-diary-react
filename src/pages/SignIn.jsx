@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect} from 'react';
+import {useContext, useEffect} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,6 +15,7 @@ import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import useApi from "../hooks/useApi.jsx";
 import {useNavigate} from "react-router-dom";
+import {DiaryStateContext} from "../App.jsx";
 
 function Copyright(props) {
   return (
@@ -35,6 +36,7 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const {setLoginSuccess} = useContext(DiaryStateContext);
   const {response, error, loading, fetchData} = useApi('/login',
       'post');
   const nav = useNavigate();
@@ -57,6 +59,8 @@ export default function SignIn() {
     if (response && response.status === 200) {
       localStorage.setItem('Access-Token', response.headers.authorization);
       localStorage.setItem('Refresh-Token', response.headers["refresh-token"]);
+      localStorage.setItem('id', response.data.id);
+      setLoginSuccess(true);
       nav("/", {replace: true})
       return;
     }

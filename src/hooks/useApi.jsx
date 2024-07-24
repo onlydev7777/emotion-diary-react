@@ -15,6 +15,7 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
       });
       localStorage.setItem('Access-Token', response.headers.authorization);
       localStorage.setItem('Refresh-Token', response.headers['refresh-token']);
+      localStorage.setItem('id', response.data.id);
       return response.headers.authorization;
     } catch (err) {
       throw new Error('Failed to refresh token');
