@@ -37,7 +37,7 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
   const {setLoginSuccess} = useContext(DiaryStateContext);
-  const {response, error, loading, fetchData} = useApi('/login',
+  const {response, error, fetchData} = useApi('/login',
       'post');
   const nav = useNavigate();
 
@@ -45,7 +45,7 @@ export default function SignIn() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const apiData = {
-      id: formData.get('email'),
+      userId: formData.get('id'),
       password: formData.get('password'),
       socialType: 'NONE'
     };
@@ -96,10 +96,10 @@ export default function SignIn() {
                   margin="normal"
                   required
                   fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
+                  id="id"
+                  label="id"
+                  name="id"
+                  autoComplete="id"
                   autoFocus
               />
               <TextField

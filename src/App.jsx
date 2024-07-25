@@ -33,14 +33,10 @@ function App() {
 
   //api load
   useEffect(() => {
-    if (loginSuccess && apiLoading) {
+    if (loginSuccess) {
       onInit();
     }
-  }, [loginSuccess, apiLoading, yearMonth]);
-
-  useEffect(() => {
-    onInit();
-  }, [yearMonth]);
+  }, [loginSuccess, yearMonth]);
 
   //api response setting
   useEffect(() => {
