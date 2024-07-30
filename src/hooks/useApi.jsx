@@ -1,10 +1,12 @@
 import {useState} from 'react';
 import axiosInstance from '../api/axiosConfig';
+import {useNavigate} from "react-router-dom";
 
 const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const nav = useNavigate();
 
   const refreshToken = async () => {
     try {
@@ -18,6 +20,9 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
       localStorage.setItem('id', response.data.id);
       return response.headers.authorization;
     } catch (err) {
+      localStorage.removeItem('Access-Token');
+      localStorage.removeItem('Refresh-Token');
+      localStorage.removeItem('id');
       throw new Error('Failed to refresh token');
     }
   };
@@ -58,7 +63,10 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
           });
           setResponse(retryResponse);
         } catch (refreshError) {
-          setError(refreshError);
+          alert("로그인 유효시간이 지났습니다. 재로그인 바랍니다.");
+          nav("/signin", {replace: true});
+          return;
+          // setError(refreshError);
         }
       } else {
         setError(err);
