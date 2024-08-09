@@ -16,6 +16,7 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import useApi from "../hooks/useApi.jsx";
 import {useNavigate} from "react-router-dom";
 import {DiaryStateContext} from "../App.jsx";
+import axiosInstance from "../api/axiosConfig.jsx";
 
 function Copyright(props) {
   return (
@@ -33,10 +34,29 @@ function Copyright(props) {
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
-const defaultTheme = createTheme();
+const defaultTheme = createTheme({
+  palette: {
+    red: {
+      main: '#ff0000', // 빨강
+      contrastText: '#ffffff',
+    },
+    black: {
+      main: '#000000', // 검정
+      contrastText: '#ffffff',
+    },
+    green: {
+      main: '#00ff00', // 초록
+      contrastText: '#000000',
+    },
+    yellow: {
+      main: '#ffff00', // 노랑
+      contrastText: '#000000',
+    },
+  },
+});
 
 export default function SignIn() {
-  const {setLoginSuccess} = useContext(DiaryStateContext);
+  const {setLoginSuccess, setAuthChecked} = useContext(DiaryStateContext);
   const {response, error, fetchData} = useApi('/login',
       'post');
   const nav = useNavigate();
@@ -54,14 +74,20 @@ export default function SignIn() {
     fetchData({method: 'post', data: apiData});
   };
 
+  const oauth2Login = (provider) => {
+    // fetchData({method: 'get', url: "/oauth2/authorization/" + provider});
+    window.location.href = "http://localhost:9001/oauth2/authorization/"
+        + provider;
+  }
+
   useEffect(() => {
     //로그인 요청이 정상이면 메인페이지로 이동
     if (response && response.status === 200) {
-      localStorage.setItem('Access-Token', response.headers.authorization);
-      localStorage.setItem('Refresh-Token', response.headers["refresh-token"]);
-      localStorage.setItem('id', response.data.id);
+      axiosInstance.defaults.headers.common['Authorization'] = response.headers.authorization;
+      localStorage.setItem("id", response.data.id);
       setLoginSuccess(true);
-      nav("/", {replace: true})
+      setAuthChecked(true);
+      nav("/", {replace: true});
       return;
     }
     //로그인 요청이 오류이면 오류페이지로 이동
@@ -120,9 +146,45 @@ export default function SignIn() {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{mt: 3, mb: 2}}
+                  sx={{mt: 1, mb: 1}}
               >
                 Sign In
+              </Button>
+              <Button
+                  // type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{mt: 1, mb: 1}}
+                  color="red"
+                  onClick={() => {
+                    oauth2Login("google")
+                  }}
+              >
+                Google Login
+              </Button>
+              <Button
+                  // type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{mt: 1, mb: 1}}
+                  color="green"
+                  onClick={() => {
+                    oauth2Login("naver")
+                  }}
+              >
+                Naver Login
+              </Button>
+              <Button
+                  // type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{mt: 1, mb: 1}}
+                  color="yellow"
+                  onClick={() => {
+                    oauth2Login("kakao")
+                  }}
+              >
+                Kakao Login
               </Button>
               <Grid container>
                 <Grid item xs>

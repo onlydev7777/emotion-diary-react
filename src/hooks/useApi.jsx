@@ -10,20 +10,15 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
 
   const refreshToken = async () => {
     try {
-      const response = await axiosInstance.post('/auth/refresh-token', {}, {
-        headers: {
-          ['Refresh-Token']: localStorage.getItem('Refresh-Token')
-        }
-      });
-      localStorage.setItem('Access-Token', response.headers.authorization);
-      localStorage.setItem('Refresh-Token', response.headers['refresh-token']);
-      localStorage.setItem('id', response.data.id);
-      return response.headers.authorization;
+      const response = await axiosInstance.post('/auth/refresh-token');
+      const accessToken = response.headers.authorization;
+      axiosInstance.defaults.headers.common["Authorization"] = accessToken;
+      localStorage.setItem("id", response.data.id);
     } catch (err) {
-      localStorage.removeItem('Access-Token');
-      localStorage.removeItem('Refresh-Token');
-      localStorage.removeItem('id');
-      throw new Error('Failed to refresh token');
+      localStorage.removeItem("id");
+      alert("로그인 유효시간이 지났습니다. 재로그인 바랍니다.");
+      nav("/signin", {replace: true});
+      throw err;
     }
   };
 
@@ -52,21 +47,18 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
       if (err.response && err.response.status === 401 && err.response.data
           === 'Access-Token is expired') {
         try {
-          const newToken = await refreshToken();
+          await refreshToken();
           const retryResponse = await axiosInstance({
             url,
             method,
             data,
-            headers: {...headers, Authorization: newToken},
+            headers,
             params,
             ...defaultOptions,
           });
           setResponse(retryResponse);
-        } catch (refreshError) {
-          alert("로그인 유효시간이 지났습니다. 재로그인 바랍니다.");
-          nav("/signin", {replace: true});
-          return;
-          // setError(refreshError);
+        } catch (error) {
+          setError(error)
         }
       } else {
         setError(err);
