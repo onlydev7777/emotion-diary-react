@@ -57,7 +57,7 @@ const defaultTheme = createTheme({
 
 export default function SignIn() {
   const {setLoginSuccess, setAuthChecked} = useContext(DiaryStateContext);
-  const {response, error, fetchData} = useApi('/login',
+  const {response, error, fetchData} = useApi('/auth/login',
       'post');
   const nav = useNavigate();
 

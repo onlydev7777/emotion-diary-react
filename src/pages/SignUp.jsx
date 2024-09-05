@@ -33,7 +33,7 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  const {response, error, fetchData} = useApi('/member/signup', 'post');
+  const {response, error, fetchData} = useApi('/auth/signup', 'post');
   const nav = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
