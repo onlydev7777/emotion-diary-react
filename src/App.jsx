@@ -91,7 +91,7 @@ function App() {
   //api response setting
   useEffect(() => {
     if (response && response.status === 200) {
-      const responseData = response.data.response;
+      const responseData = response.data.response.diaryResponses;
 
       if (apiMethod === "INIT") {
         const mappingData = responseData.map((item) => {
@@ -119,6 +119,7 @@ function App() {
 
   const onInit = () => {
     fetchData({
+      url: "/diary/" + localStorage.getItem('id') + "/month-list",
       params: {
         diaryYearMonth: yearMonth
       }
