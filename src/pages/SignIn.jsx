@@ -75,8 +75,8 @@ export default function SignIn() {
   };
 
   const oauth2Login = (provider) => {
-    // fetchData({method: 'get', url: "/oauth2/authorization/" + provider});
-    window.location.href = "http://localhost:9001/oauth2/authorization/"
+    // fetchData({method: 'get', urdl: "/oauth2/authorization/" + provider});
+    window.location.href = "http://localhost:9002/oauth2/authorization/"
         + provider;
   }
 
