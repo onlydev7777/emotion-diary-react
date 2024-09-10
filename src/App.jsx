@@ -46,7 +46,7 @@ function App() {
 
       if (id && !accessToken) { // id는 있지만, accessToken이 설정되지 않았을 때
         try {
-          const response = await axiosInstance.post('/auth/refresh-token');
+          const response = await axiosInstance.post('/member/refresh-token');
           axiosInstance.defaults.headers.common["Authorization"] = response.headers.authorization; // 새로운 access-token
           localStorage.setItem('id', response.data.id);
           setLoginSuccess(true);

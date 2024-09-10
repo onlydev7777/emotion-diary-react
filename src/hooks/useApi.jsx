@@ -10,7 +10,7 @@ const useApi = (defaultUrl, defaultMethod = 'get', defaultOptions = {}) => {
 
   const refreshToken = async () => {
     try {
-      const response = await axiosInstance.post('/auth/refresh-token');
+      const response = await axiosInstance.post('/member/refresh-token');
       const accessToken = response.headers.authorization;
       axiosInstance.defaults.headers.common["Authorization"] = accessToken;
       localStorage.setItem("id", response.data.id);
