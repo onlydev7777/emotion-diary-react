@@ -24,7 +24,7 @@ const Home = () => {
   } = useContext(DiaryStateContext);
   const nav = useNavigate();
   const {response, error, loading, fetchData} = useApi(
-      "/member/logout", "get");
+      "/auth/logout", "get");
   usePageTitle("감정일기장");
 
   useEffect(() => {
